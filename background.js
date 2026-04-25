@@ -1,39 +1,120 @@
+// ================================
+// JAGRES AI ASSISTANT v2.0 - WITH CUSTOM PERSONA
+// ✅ Human-like tweets | ✅ Custom Persona | ✅ Natural Indonesian
 // ============================================
-// JAGRES AI ASSISTANT - ULTRA-NATURAL VERSION
-// ✅ Human-like tweets | ✅ Zero emoji spam | ✅ No "gimana menurut lu" | ✅ Natural Indonesian
-// ============================================
+
+// === CUSTOM PERSONA SYSTEM =====
+const DEFAULT_PERSONAS = [
+  {
+    id: 'default',
+    name: 'Default',
+    emoji: '🤖',
+    description: 'Standard AI assistant — natural & adaptive',
+    tone: 'casual',
+    customInstruction: '',
+    language: 'auto'
+  },
+  {
+    id: 'motivator',
+    name: 'Motivator',
+    emoji: '💪',
+    description: 'Selalu positif, kasih semangat, inspiratif',
+    tone: 'hype',
+    customInstruction: 'Kamu adalah motivator sejati. Selalu lihat sisi positif, kasih semangat, dan inspire orang. Gunakan kata-kata yang membangkitkan semangat tapi tetap genuine, bukan klise.',
+    language: 'auto'
+  },
+  {
+    id: 'roaster',
+    name: 'Roaster',
+    emoji: '🔥',
+    description: 'Savage tapi lucu, roasting dengan cinta',
+    tone: 'humor',
+    customInstruction: 'Kamu adalah roaster profesional. Balas dengan roasting yang savage tapi tetap lucu dan tidak menyakiti. Sarcasm level tingi, tapi ada warmth di baliknya. Jangan toxic, jangan personal attack.',
+    language: 'auto'
+  },
+  {
+    id: 'techbro',
+    name: 'Tech Bro',
+    emoji: '💻',
+    description: 'Startup mindset, tech-savvy, hustle culture',
+    tone: 'opinion',
+    customInstruction: 'Kamu adalah tech bro yang passionate soal teknologi, startup, dan inovasi. Sering pakai istilah tech (disrupt, scale, iterate, pivot). Optimis soal masa depan tech tapi tetap grounded.',
+    language: 'auto'
+  },
+  {
+    id: 'wibu',
+    name: 'Wibu',
+    emoji: '🎌',
+    description: 'Otaku culture, anime references, kawaii vibes',
+    tone: 'casual',
+    customInstruction: 'Kamu adalah wibu sejati. Sering reference anime/manga, pakai istilah Jepang casual (sugoi, kawaii, nani, sasuga). Tapi tetap bisa ngobrol normal, bukan cringe wibu. Balance antara otaku dan orang normal.',
+    language: 'auto'
+  },
+  {
+    id: 'philosopher',
+    name: 'Philosopher',
+    emoji: '🧠',
+    description: 'Deep thinker, existential, thought-provoking',
+    tone: 'informative',
+    customInstruction: 'Kamu adalah pemikir mendalam. Balas dengan perspektif filosofis yang bikin orang mikir. Bisa quote filsuf tapi dengan bahasa yang accessible. Jangan pretentious, tetap relatable.',
+    language: 'auto'
+  },
+  {
+    id: 'gossiper',
+    name: 'Gossiper',
+    emoji: '☕',
+    description: 'Spill the tea, drama enthusiast, sassy',
+    tone: 'storytelling',
+    customInstruction: 'Kamu adalah queen of gossip. Sassy, dramatic, suka spill tea. Pakai ekspresi kayak "bestie", "no because", "the way I—", "chile". Tapi tetap fun dan tidak jahat.',
+    language: 'auto'
+  }
+];
+
+async function getActivePersona() {
+  try {
+    const { activePersonaId, customPersonas } = await chrome.storage.sync.get(['activePersonaId', 'customPersonas']);
+    const allPersonas = [...DEFAULT_PERSONAS, ..(customPersonas || [])];
+    const active = allPersonas.find(p => p.id === activePersonaId);
+    return active || DEFAULT_PERSONAS[0];
+  } catch (e) {
+    return DEFAULT_PERSONAS[0];
+  }
+}
+
+async function getAllPersonas() {
+  try {
+    const { customPersonas } = await chrome.storage.sync.get(['customPersonas']);
+    return [...DEFAULT_PERSONAS, ...(customPersonas || [])];
+  } catch (e) {
+    return DEFAULT_PERSONAS;
+  }
+}
 
 // ===== LANGUAGE DETECTION (CODE-SWITCHING SUPPORT) =====
 function detectLanguage(tweetText) {
   const lower = tweetText.toLowerCase();
   
-  // JAPANESE: Character-based + particle detection
   if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(tweetText)) {
     const hasParticles = /は|が|を|に|で|と|の|も|か|よ|ね|わ|さ|ぜ|ぞ|な|っ|\u3001|\u3002/.test(tweetText);
     if (hasParticles || (tweetText.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g) || []).length >= 3) {
       return 'japanese';
     }
-  }
   
-  // INDONESIAN CODE-SWITCHING: Check for Indonesian markers
   const idMarkers = ['gue', 'lu', 'banget', 'sih', 'aja', 'dong', 'deh', 'anjay', 'mantap', 'wih', 'tolong'];
   const enMarkers = ['the', 'and', 'but', 'because', 'very', 'really', 'actually', 'literally'];
-  
   let idScore = 0, enScore = 0;
   idMarkers.forEach(m => { if (new RegExp(`\\b${m}\\b`, 'i').test(tweetText)) idScore++; });
   enMarkers.forEach(m => { if (new RegExp(`\\b${m}\\b`, 'i').test(tweetText)) enScore++; });
   
-  // Prioritize Indonesian if markers found
   if (idScore >= 2) return 'indonesian';
   if (enScore >= 3 && idScore === 0) return 'english';
-  
   return 'english';
 }
 
 // ===== TOPIC DETECTION (EXPANDED) =====
 const TOPIC_KEYWORDS = {
   crypto: ['bitcoin', 'btc', 'ethereum', 'eth', 'crypto', 'blockchain', 'defi', 'nft', 'hodl', 'dyor', 'pump', 'moon', 'gm', 'wagmi'],
-  anime: ['anime', 'manga', 'japan', 'japanese', 'アニメ', 'ワンピース', 'ナルト', 'tokyo', 'ghibli', 'waifu', 'otaku'],
+  anime: ['anime', 'manga', 'japanese', 'アニメ', 'ワンピース', 'ナルト', 'tokyo', 'ghibli', 'waifu', 'otaku'],
   gaming: ['game', 'gaming', 'playstation', 'ps5', 'xbox', 'nintendo', 'steam', 'fps', 'rpg', 'valorant', 'league', 'minecraft'],
   tech: ['tech', 'technology', 'ai', 'machine learning', 'startup', 'app', 'software', 'hardware', 'coding', 'developer'],
   food: ['food', 'makanan', 'kuliner', 'enak', 'sedap', 'restaurant', 'cooking', 'delicious', 'tasty', 'yummy'],
@@ -67,13 +148,12 @@ function detectTopic(tweetText) {
 // ===== SENTIMENT ANALYSIS =====
 function detectSentiment(tweetText) {
   const lower = tweetText.toLowerCase();
-  const positiveWords = ['happy', 'love', 'excited', 'great', 'awesome', 'fire', 'lit', 'amazing', 'congrats', 'thank', 'thanks', 'good', 'better', 'best', 'win', 'winner', '😍', '🥰', '❤️', '😁', '😄', '🎉', '✨', '🌟', '最高', 'やばい', 'うける', '尊い', 'ぴえん', '草'];
-  const negativeWords = ['sad', 'angry', 'hate', 'terrible', 'awful', 'disappointed', 'frustrated', 'fail', 'failure', 'lose', 'loser', 'broken', '😭', '😢', '😞', '😠', '😡', '💔', '💀', '悲しい', '辛い', 'ダメ'];
+  const positiveWords = ['happy', 'love', 'excited', 'great', 'awesome', 'fire', 'lit', 'amazing', 'congrats', 'thank', 'thanks', 'good', 'better', 'best', 'winner', '😍', '🥰', '❤️', '😁', '😄', '🎉', '✨', '🌟', '最高', 'やばい', 'うける', '尊い', 'ぴえん', '草'];
+  const negativeWords = ['sad', 'angry', 'hate', 'terrible', 'awful', 'disappointed', 'frustrated', 'failure', 'lose', 'loser', 'broken', '😭', '😢', '😞', '😠', '😡', '💔', '💀', '悲しい', '辛い', 'ダメ'];
   
   let posCount = 0, negCount = 0;
   positiveWords.forEach(w => { if (lower.includes(w)) posCount++; });
   negativeWords.forEach(w => { if (lower.includes(w)) negCount++; });
-  
   if (posCount > negCount && posCount >= 2) return { sentiment: 'positive', score: posCount };
   if (negCount > posCount && negCount >= 2) return { sentiment: 'negative', score: negCount };
   return { sentiment: 'neutral', score: 0 };
@@ -88,7 +168,7 @@ function adjustStyleForSentiment(baseStyle, sentiment) {
   return map[sentiment]?.[baseStyle] || baseStyle;
 }
 
-// ===== PROMPT BUILDER v2 (SYSTEM + USER SPLIT, ADAPTIVE LENGTH) =====
+// ===== PROMPT BUILDER v2 (WITH PERSONA SUPPORT) =====
 function calcReplyLength(tweetText) {
   const len = tweetText.trim().length;
   if (len < 60)  return { label: "VERY SHORT (10-20 words)", tokens: 80 };
@@ -97,7 +177,7 @@ function calcReplyLength(tweetText) {
   return           { label: "LONG (50-80 words) — match the tweet's depth", tokens: 280 };
 }
 
-function buildSystemPrompt(language) {
+function buildSystemPrompt(language, persona = null) {
   const systems = {
     indonesian:
 `Kamu adalah orang Indonesia asli, aktif di Twitter/X, usia 20-an.
@@ -123,16 +203,29 @@ Output: HANYA teks reply. Tidak ada label, kutipan, atau preamble.`.trim(),
 
     english:
 `You are a real person, mid-20s, very active on Twitter/X.
-Tone: casual, sharp, occasionally witty. Serious when context demands it.
+Tone: casual, sharp, occasionally wity. Serious when context demands it.
 HARD RULES:
 - Never start with "Great", "Sure", "Of course", "Absolutely", "Wow", "That's"
 - No emoji at start of sentence
-- Don't parrot the original tweet back verbatim
+- Don't parot the original tweet back verbatim
 - Max 2 emoji total
 - Never sound like an AI or add disclaimers/caveats
 Output: ONLY the reply text. No labels, quotes, or preamble.`.trim()
   };
-  return systems[language] || systems.english;
+
+  let base = systems[language] || systems.english;
+
+  // INJECT PERSONA
+  if (persona && persona.id !== 'default' && persona.customInstruction) {
+    const personaBlock = {
+      indonesian: `\n\nPERSONA AKTIF: "${persona.name}" ${persona.emoji}\nINSTRUKSI KARAKTER: ${persona.customInstruction}\nSemua reply HARUS sesuai karakter ini. Jangan keluar dari persona.`,
+      japanese: `\nアクティブペルソナ: "${persona.name}" ${persona.emoji}\nキャラクター指示: ${persona.customInstruction}\nすべての返信はこのキャラクターに従うこと。ペルソナから外れない。`,
+      english: `\n\nACTIVE PERSONA: "${persona.name}" ${persona.emoji}\nCHARACTER INSTRUCTION: ${persona.customInstruction}\nAll replies MUST match this character. Stay in persona at all times.`
+    };
+    base += personaBlock[language] || personaBlock.english;
+  }
+
+  return base;
 }
 
 function buildUserPrompt(tweetText, language, topic, sentiment, enrichedContext = '') {
@@ -153,7 +246,7 @@ INSTRUKSI:
 - Tweet BERTANYA → jawab langsung & spesifik, jangan cuma "bagus tuh"
 - Tweet OPINI/CERITA → respons dengan sudut pandang sendiri + alasan singkat
 - Tweet PANJANG/KOMPLEKS → balas proporsional, jangan lebih pendek dari 30 kata
-- Ada gambar/video/link → komentari kontennya secara spesifik
+- Ada gambar/video/link → komentari kontenya secara spesifik
 - Hindari jawaban generik tanpa substansi
 ${enrichedContext}
 
@@ -195,42 +288,35 @@ Reply:`.trim()
   return prompts[language] || prompts.english;
 }
 
-// backward compat wrapper
 function buildPrompt(tweetText, language, topic, sentiment, enrichedContext = '') {
   return buildUserPrompt(tweetText, language, topic, sentiment, enrichedContext);
 }
 
-// ===== HUMAN-LIKE POST-PROCESSING (CRITICAL FIX) =====
+// ===== HUMAN-LIKE POST-PROCESSING =====
 function humanizeIndonesianTweet(text) {
-  // 1. LIMIT EMOJI MAX 2 (HAPUS SPAM)
-  text = text.replace(/([\p{Emoji}])\1{2,}/gu, '$1$1'); // Hapus 3+ emoji berulang (🚀🚀🚀 → 🚀🚀)
+  text = text.replace(/([\p{Emoji}])\1{2,}/gu, '$1$1');
   const emojiRegex = /[\p{Emoji}]/gu;
   const emojis = text.match(emojiRegex) || [];
   if (emojis.length > 2) {
     let count = 0;
     text = text.replace(emojiRegex, match => (++count <= 2) ? match : '');
   }
-  
-  // 2. GANTI KATA FORMAL → CASUAL
   const formalToCasual = [
     [/saya/gi, 'gue'], [/anda|kamu/gi, 'lu'], [/sangat|sekali/gi, 'banget'],
     [/tidak/gi, 'gak'], [/belum/gi, 'blom'], [/terima kasih/gi, 'makasih'],
-    [/maaf/gi, 'maap'], [/lagi/gi, 'lagi'], [/jadi/gi, 'jadi'],
-    [/bisa/gi, 'bisa'], [/tahu/gi, 'tau'], [/mungkin/gi, 'mungkin']
+    [/maf/gi, 'map'], [/tahu/gi, 'tau']
   ];
-  formalToCasual.forEach(([regex, replacement]) => {
+  formalToCasual.forEach([regex, replacement]) => {
     text = text.replace(regex, replacement);
   });
   
-  // 3. HAPUS KATA BERLEBIHAN
   text = text
     .replace(/banget banget/gi, 'banget')
     .replace(/mantap mantap/gi, 'mantap')
     .replace(/anjay anjay/gi, 'anjay')
-    .replace(/wkwk wkwk/gi, 'wkwk')
+    .replace(/wk wkwk/gi, 'wkwk')
     .replace(/gila gila/gi, 'gila');
   
-  // 4. RANDOM SLANG INJECTOR (HANYA JIKA SESUAI)
   const randomSlangs = [
     { trigger: /enak|sedap|nikmat/i, slang: ' wkwk' },
     { trigger: /susah|ribet|pusing/i, slang: ' hadeh' },
@@ -238,7 +324,6 @@ function humanizeIndonesianTweet(text) {
     { trigger: /mahal|duit|uang/i, slang: ' aduh' },
     { trigger: /\?$/i, slang: ' sih' }
   ];
-  
   for (const { trigger, slang } of randomSlangs) {
     if (trigger.test(text) && !text.includes(slang.trim()) && Math.random() > 0.6) {
       text = text.replace(/([.!?])\s*$/, `${slang}$1`);
@@ -246,18 +331,15 @@ function humanizeIndonesianTweet(text) {
     }
   }
   
-  // 5. FINAL CLEANUP
   text = text
     .replace(/^["'`]+|["'`]+$/g, '')
-    .replace(/^[“”‘’]+|[“”‘’]+$/g, '')
+    .replace(/^[""'']+|[""'']+$/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   
-  // Hapus titik di akhir kalimat casual
   if (text.length < 120 && !/[.!?]$/.test(text.slice(-2))) {
     text = text.replace(/\.$/, '');
   }
-  
   return text.length > 280 ? text.substring(0, 277) + '...' : text;
 }
 
@@ -312,18 +394,34 @@ Output: ONLY tweet text. Direct. No labels, no outer quotes.`.trim(),
 キャラクター:
 - 一人称は「俺/私/自分」など自然な使い方
 - 自分の意見を持っている、中立一辺倒じゃない
-- たまに「ww」「まじか」「やばい」など自然なスラング
+- たまに「w」「まじか」「やばい」など自然なスラング
 
 禁止:
 - 「知ってた?」「豆知識:」「スレッド:」「みなさん」で始めない
 - 箇条書き・番号リスト禁止
 - 絵文字は最大2個
 - ブログ・企業SNS・プレスリリース風の文体禁止
-- 「いいね・RTお願いします」禁止
+- 「いね・RTお願いします」禁止
 
 出力: ツイートテキストのみ。ラベルなし・引用符なし・前置きなし。`.trim()
   };
   return systems[language] || systems.english;
+}
+
+// ===== CONTENT SYSTEM PROMPT WITH PERSONA =====
+async function getContentSystemPromptWithPersona(language) {
+  const persona = await getActivePersona();
+  let base = getContentSystemPrompt(language);
+  
+  if (persona && persona.id !== 'default' && persona.customInstruction) {
+    const inject = {
+      indonesian: `\n\nPERSONA: "${persona.name}" ${persona.emoji} — ${persona.customInstruction}`,
+      japanese: `\n\nペルソナ: "${persona.name}" ${persona.emoji} — ${persona.customInstruction}`,
+      english: `\n\nPERSONA: "${persona.name}" ${persona.emoji} — ${persona.customInstruction}`
+    };
+    base += inject[language] || inject.english;
+  }
+  return base;
 }
 
 const CONTENT_TONE_PROMPTS = {
@@ -338,7 +436,6 @@ const CONTENT_TONE_PROMPTS = {
 // ===== WEB SEARCH FOR CONTENT CONTEXT =====
 async function searchTopicContext(topic) {
   try {
-    // DuckDuckGo Instant Answer API — no key required, CORS friendly
     const query = encodeURIComponent(topic + ' latest news 2025');
     const url = `https://api.duckduckgo.com/?q=${query}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
     const res = await fetch(url);
@@ -346,23 +443,13 @@ async function searchTopicContext(topic) {
     const data = await res.json();
 
     const snippets = [];
-
-    // Abstract (main summary)
-    if (data.Abstract && data.Abstract.length > 20) {
-      snippets.push(data.Abstract);
-    }
-
-    // Related topics
+    if (data.Abstract && data.Abstract.length > 20) snippets.push(data.Abstract);
     if (data.RelatedTopics) {
       data.RelatedTopics.slice(0, 4).forEach(rt => {
         if (rt.Text && rt.Text.length > 15) snippets.push(rt.Text);
       });
     }
-
-    // Answer (quick facts)
-    if (data.Answer && data.Answer.length > 5) {
-      snippets.push(data.Answer);
-    }
+    if (data.Answer && data.Answer.length > 5) snippets.push(data.Answer);
 
     if (snippets.length === 0) return null;
     return snippets.slice(0, 4).join(' | ');
@@ -372,14 +459,13 @@ async function searchTopicContext(topic) {
   }
 }
 
-// ===== CONTENT CREATOR: STANDALONE TWEET =====
+// === CONTENT CREATOR: STANDALONE TWEET (WITH PERSONA) =====
 async function generateStandaloneTweet(topic, style = 'casual', language = 'indonesian') {
   const tone = CONTENT_TONE_PROMPTS[style] || CONTENT_TONE_PROMPTS.casual;
   const langKey = language === 'indonesian' ? 'id' : language === 'japanese' ? 'jp' : 'en';
   const toneDesc = tone[langKey];
-  const systemPrompt = getContentSystemPrompt(language);
+  const systemPrompt = await getContentSystemPromptWithPersona(language);
 
-  // 🔍 Web search for fresh context
   const searchContext = await searchTopicContext(topic);
   const searchNote = searchContext
     ? (language === 'indonesian'
@@ -390,12 +476,12 @@ async function generateStandaloneTweet(topic, style = 'casual', language = 'indo
     : '';
 
   const toneExamples = {
-    casual:       { id: '"lagi nonton film horor sendirian jam 2 malam, bisa gila"',         en: '"just replied "sure" to something I absolutely cannot do lol"',    jp: '"深夜2時に一人でホラー映画見てる。正気か"' },
+    casual:       { id: '"lagi nonton film horor sendirian jam 2 malam, bisa gila"',         en: '"just replied \"sure\" to something I absolutely cannot do lol"',    jp: '"深夜2時に一人でホラー映画見てる。正気か"' },
     storytelling: { id: '"gue pernah salah naik ojol ke tempat yang sama sekali beda kota"', en: '"I once confidently gave directions to a city I\'ve never been to"', jp: '"一度だけ全く知らない道を自信満々に案内したことある"' },
     opinion:      { id: '"orang yang bilang \'work smart not work hard\' biasanya belum pernah kerja keras"', en: '"\"networking\" is just a polite word for collecting people you\'ll forget in 3 days"', jp: '"「努力より効率」って言う人ほど努力したことなさそう"' },
     humor:        { id: '"diet hari ini dimulai besok. seperti biasa"',                       en: '"my sleep schedule is a work of abstract fiction"',                 jp: '"ダイエットは明日から。いつも通り"' },
-    informative:  { id: '"fakta: 90% stress bukan dari kerjaannya, tapi dari cara orangnya manage ekspektasi"', en: '"the reason you procrastinate isn\'t laziness — it\'s usually unclear next steps"', jp: '"ストレスの9割は仕事そのものじゃなくて、期待値のズレから来てる"' },
-    hype:         { id: '"2 tahun lalu gue gak tau apa-apa soal ini. sekarang ini jadi income utama gue"',    en: '"6 months ago I had zero followers. consistency is genuinely underrated"',           jp: '"2年前は何も知らなかった。今はこれがメインの収入"' }
+    informative:  { id: '"fakta: 90% stress bukan dari kerjannya, tapi dari cara orangnya manage ekspektasi"', en: '"the reason you procrastinate isn\'t laziness — it\'s usually unclear next steps"', jp: '"ストレスの9割は仕事そのものじゃなくて、期待値のズレから来てる"' },
+    hype:         { id: '"2 tahun lalu gue gak tau apa-apa soal ini. sekarang ini jadi income utama gue"',    en: '"6 months ago I had zero followers. consistency is genuinely underated"',           jp: '"2年前は何も知らなかった。今はこれがメインの収入"' }
   };
   const ex = toneExamples[style] || toneExamples.casual;
 
@@ -472,11 +558,10 @@ ${ex.jp}
   const data = await response.json();
   let tweet = data.choices[0].message.content.trim();
 
-  // cleanup
   tweet = tweet
     .replace(/^["'`""'']+|["'`""'']+$/g, '')
     .replace(/^(Tweet:|Reply:|Output:)\s*/i, '')
-    .replace(/\s+/g, ' ')
+    .replace(/\s+/g, ')
     .trim();
 
   if (language === 'indonesian') tweet = humanizeIndonesianTweet(tweet);
@@ -484,18 +569,17 @@ ${ex.jp}
   return tweet.length > 280 ? tweet.substring(0, 277) + '...' : tweet;
 }
 
-// ===== CONTENT CREATOR: THREAD =====
+// ===== CONTENT CREATOR: THREAD (WITH PERSONA) =====
 async function generateThread(topic, style = 'casual', language = 'indonesian') {
   const tone = CONTENT_TONE_PROMPTS[style] || CONTENT_TONE_PROMPTS.casual;
   const langKey = language === 'indonesian' ? 'id' : language === 'japanese' ? 'jp' : 'en';
   const toneDesc = tone[langKey];
-  const systemPrompt = getContentSystemPrompt(language);
+  const systemPrompt = await getContentSystemPromptWithPersona(language);
 
-  // 🔍 Web search for fresh context
   const searchContext = await searchTopicContext(topic);
   const searchNote = searchContext
     ? (language === 'indonesian'
-        ? `\n\nINFO TERKINI (jadikan dasar fakta thread, jangan copy-paste):\n${searchContext}`
+        ? `\nINFO TERKINI (jadikan dasar fakta thread, jangan copy-paste):\n${searchContext}`
         : language === 'japanese'
         ? `\n\n最新情報（スレッドの事実の根拠に、コピーしない）:\n${searchContext}`
         : `\n\nRECENT CONTEXT (ground the thread in these facts, don't copy-paste):\n${searchContext}`)
@@ -595,24 +679,20 @@ Tweet 3: [text]`.trim(),
   const data = await response.json();
   let fullThread = data.choices[0].message.content.trim();
 
-  // Parse by --- separator first, fallback to Tweet N: pattern
   let parts = fullThread.split(/\n---\n/).map(p => p.trim()).filter(p => p.length > 5);
   if (parts.length < 3) {
     parts = fullThread.split(/Tweet \d:/i).map(p => p.trim()).filter(p => p.length > 5);
   }
   if (parts.length < 3) {
-    // Last resort: split by double newline
     parts = fullThread.split(/\n\n+/).filter(p => p.trim().length > 10);
   }
 
   const threads = [];
   for (let i = 0; i < 3; i++) {
     let part = (parts[i] || `${topic} — part ${i+1}`).trim();
-    // Remove "Tweet N:" prefix if present
     part = part.replace(/^(Tweet|ツイート)\s*\d+:\s*/i, '').trim();
-    part = part.replace(/^["'`""'']+|["'`""'']+$/g, '');
+    part = part.replace(/^["'`""'']+|["'`""'']+$/g, ');
     if (language === 'indonesian') part = humanizeIndonesianTweet(part);
-    // Ensure thread markers
     if (i === 0 && !part.includes('👇')) part = part.replace(/([.!?]?)$/, ' 👇');
     threads.push(part.length > 280 ? part.substring(0, 277) + '...' : part);
   }
@@ -623,7 +703,6 @@ Tweet 3: [text]`.trim(),
 // ===== NATURAL SLANG LIMITER =====
 function limitSlangOveruse(text) {
   if (!text) return text;
-  
   const slangWords = ['ngl', 'tbh', 'fr', 'lol', 'omg', 'no cap', 'lowkey', 'highkey', 'bet', 'cap', 'based', 'mid'];
   
   const slangCount = {};
@@ -645,8 +724,7 @@ function limitSlangOveruse(text) {
     }
   });
   
-  text = text.replace(/\s+(ngl|tbh|fr|lol|omg)\s*$/gi, '');
-  
+  text = text.replace(/\s+(ngl|tbh|fr|lol|omg)\s*$/gi, ');
   let totalSlang = 0;
   slangWords.forEach(word => {
     const regex = new RegExp(`\\b${word}\\b`, 'gi');
@@ -659,7 +737,7 @@ function limitSlangOveruse(text) {
       const word = slangWords[i];
       const regex = new RegExp(`\\b${word}\\b`, 'gi');
       if (regex.test(text)) {
-        text = text.replace(regex, '');
+        text = text.replace(regex, ');
         totalSlang--;
       }
     }
@@ -671,35 +749,28 @@ function limitSlangOveruse(text) {
 // ===== NATURAL JAPANESE POST-PROCESSING =====
 function naturalizeJapanese(text) {
   if (!text) return text;
-  
-  // Remove brackets
   text = text
     .replace(/「|」|『|』|（|）/g, '')
-    .replace(/\[|\]/g, '');
+    .replace(/\[|\]/g, ');
   
-  // Reduce excessive punctuation
   text = text
     .replace(/！{2,}/g, '！')
     .replace(/!{2,}/g, '!')
     .replace(/？{2,}/g, '？')
     .replace(/\?{2,}/g, '?');
   
-  // Remove repetitive slang
   text = text
     .replace(/(ぴえん){2,}/gi, 'ぴえん')
     .replace(/(草){2,}/gi, '草')
     .replace(/(うける){2,}/gi, 'うける');
   
-  // Remove overly formal endings
   text = text
     .replace(/です$/g, '')
     .replace(/ます$/g, 'る')
     .replace(/でした$/g, 'だった');
   
-  // Trim excessive spaces/punctuation
-  text = text.trim().replace(/^[\s！？!?\.,、。]+|[\s！？!?\.,、。]+$/g, '');
+  text = text.trim().replace(/^[\s！？!?\.,、。]+|[\s！？!?\.,、。]+$/g, ');
   
-  // Limit length
   if (text.length > 100) {
     text = text.substring(0, 97) + '…';
   }
@@ -727,9 +798,8 @@ function buildMediaContext(ctx) {
   return parts.length > 0 ? '\n\nKONTEKS TAMBAHAN:\n' + parts.join('\n') : '';
 }
 
-// ===== MAIN GENERATION =====
+// ===== MAIN GENERATION (WITH PERSONA) =====
 async function generateResponse(tweetContext, userStyle = 'casual', includeEmojis = true) {
-  // Support both old string format and new object format
   const tweetText = typeof tweetContext === 'string' ? tweetContext : tweetContext.text;
   const mediaCtx = typeof tweetContext === 'object' ? tweetContext : {};
 
@@ -737,11 +807,11 @@ async function generateResponse(tweetContext, userStyle = 'casual', includeEmoji
   const topic = detectTopic(tweetText);
   const sentimentResult = detectSentiment(tweetText);
   const adjustedStyle = adjustStyleForSentiment(userStyle, sentimentResult.sentiment);
-  
   console.log('🔍 Detected - Language:', language, '| Topic:', topic, '| Sentiment:', sentimentResult.sentiment, '| Style:', adjustedStyle);
   
   const enrichedContext = buildMediaContext(mediaCtx);
-  const systemPrompt = buildSystemPrompt(language);
+  const persona = await getActivePersona();
+  const systemPrompt = buildSystemPrompt(language, persona);
   const userPrompt   = buildUserPrompt(tweetText, language, topic, sentimentResult.sentiment, enrichedContext);
   const lengthGuide  = calcReplyLength(tweetText);
   
@@ -770,7 +840,6 @@ async function generateResponse(tweetContext, userStyle = 'casual', includeEmoji
   if (!data.choices?.[0]?.message?.content) throw new Error('Empty response');
   
   let reply = data.choices[0].message.content.trim();
-  
   if (language === 'english') reply = humanizeText(reply);
   reply = limitSlangOveruse(reply);
   if (language === 'japanese') reply = naturalizeJapanese(reply);
@@ -778,13 +847,13 @@ async function generateResponse(tweetContext, userStyle = 'casual', includeEmoji
   reply = reply.replace(/\s+/g, ' ').trim()
     .replace(/^["'`]+|["'`]+$/g, '')
     .replace(/^[\u201c\u201d\u2018\u2019]+|[\u201c\u201d\u2018\u2019]+$/g, '');
-  
   if (reply.length < 100 && !reply.includes('?') && !reply.includes('!')) {
-    reply = reply.replace(/\.$/,'');
+    reply = reply.replace(/\.$/,');
   }
   
   return reply.length > 280 ? reply.substring(0, 277) + '...' : reply;
 }
+
 // ===== MULTI-RESPONSE GENERATION =====
 async function generateMultipleResponses(tweetContext, userStyle = 'casual', includeEmojis = true, numResponses = 3) {
   const tweetText = typeof tweetContext === 'string' ? tweetContext : tweetContext.text;
@@ -794,11 +863,9 @@ async function generateMultipleResponses(tweetContext, userStyle = 'casual', inc
   const baseStyles = ['casual', 'enthusiastic', 'analytical', 'meme', 'supportive'];
   const responses = [];
   
-  // User's preferred style (recommended)
   const userResp = await generateResponse(tweetContext, userStyle, includeEmojis);
   responses.push({ id: 1, text: userResp, style: userStyle, isRecommended: true });
   
-  // Additional styles
   for (let i = 1; i < numResponses; i++) {
     const randStyle = baseStyles[Math.floor(Math.random() * baseStyles.length)];
     const resp = await generateResponse(tweetContext, randStyle, includeEmojis);
@@ -822,7 +889,7 @@ function humanizeText(text) {
   ];
   
   for (const phrase of aiPhrases) {
-    result = result.replace(new RegExp(phrase, 'gi'), '');
+    result = result.replace(new RegExp(phrase, 'gi'), ');
   }
   
   result = result
@@ -852,29 +919,22 @@ function humanizeText(text) {
   return result.trim();
 }
 
-// ===== IMAGE SEARCH (Unsplash Source — no API key needed) =====
+// ===== IMAGE SEARCH =====
 async function searchRelevantImage(topic, language = 'indonesian') {
   try {
-    // Translate topic to English keywords for better image results
     const keywords = await extractImageKeywords(topic, language);
     const query = encodeURIComponent(keywords);
-
-    // Try Unsplash Source (direct CDN, no API key, returns redirect URL)
-    // We use a proxy trick: fetch the URL and read the final redirected URL
     const unsplashUrl = `https://source.unsplash.com/800x450/?${query}`;
 
-    // DuckDuckGo image search as primary (returns JSON with image URLs)
     const ddgUrl = `https://api.duckduckgo.com/?q=${query}&iax=images&ia=images&format=json&no_redirect=1`;
     const ddgRes = await fetch(ddgUrl);
     if (ddgRes.ok) {
       const ddgData = await ddgRes.json();
-      // DDG sometimes returns image in Infobox
       if (ddgData.Image && ddgData.Image.length > 10) {
         return { url: ddgData.Image, source: 'duckduckgo', query: keywords };
       }
     }
 
-    // Fallback: Unsplash Source URL (always works, returns relevant photo)
     return { url: unsplashUrl, source: 'unsplash', query: keywords };
   } catch (e) {
     console.log('Image search failed:', e.message);
@@ -883,7 +943,6 @@ async function searchRelevantImage(topic, language = 'indonesian') {
 }
 
 async function extractImageKeywords(topic, language) {
-  // Simple keyword extraction — translate common Indonesian/Japanese terms
   const translations = {
     'crypto': 'cryptocurrency bitcoin', 'kripto': 'cryptocurrency',
     'saham': 'stock market finance', 'investasi': 'investment finance',
@@ -905,7 +964,6 @@ async function extractImageKeywords(topic, language) {
       keywords = keywords.replace(id, en);
     }
   }
-  // Clean up, take first 4 words max
   return keywords.replace(/[^\w\s]/g, '').split(' ').slice(0, 4).join(' ').trim() || topic;
 }
 
@@ -914,14 +972,12 @@ function simulateHumanTyping(text, language = 'indonesian') {
   if (!text) return text;
   let result = text;
 
-  // Indonesian natural typos & shortcuts
   const idSubstitutions = [
     [/\byang\b/g,     () => Math.random() > 0.5 ? 'yg' : 'yang'],
     [/\bdengan\b/g,   () => Math.random() > 0.6 ? 'dgn' : 'dengan'],
     [/\bsudah\b/g,    () => Math.random() > 0.4 ? 'udah' : 'sudah'],
     [/\btidak\b/g,    () => Math.random() > 0.4 ? 'gak' : 'tidak'],
     [/\buntuk\b/g,    () => Math.random() > 0.5 ? 'buat' : 'untuk'],
-    [/\bmereka\b/g,   () => Math.random() > 0.6 ? 'mereka' : 'mereka'],
     [/\bsangat\b/g,   () => Math.random() > 0.5 ? 'banget' : 'sangat'],
     [/\bkarena\b/g,   () => Math.random() > 0.5 ? 'karena' : 'karna'],
     [/\bkalau\b/g,    () => Math.random() > 0.4 ? 'kalo' : 'kalau'],
@@ -932,7 +988,7 @@ function simulateHumanTyping(text, language = 'indonesian') {
 
   const enSubstitutions = [
     [/\byou\b/gi,     () => Math.random() > 0.5 ? 'u' : 'you'],
-    [/\bpeople\b/gi,  () => Math.random() > 0.6 ? 'ppl' : 'people'],
+    [/\bpeople\b/gi,  () => Math.random() > 0.6 ? 'pl' : 'people'],
     [/\bsomething\b/gi, () => Math.random() > 0.5 ? 'smth' : 'something'],
     [/\bwithout\b/gi, () => Math.random() > 0.6 ? 'w/o' : 'without'],
     [/\bbecause\b/gi, () => Math.random() > 0.5 ? 'bc' : 'because'],
@@ -947,12 +1003,10 @@ function simulateHumanTyping(text, language = 'indonesian') {
     result = result.replace(pattern, replacer);
   }
 
-  // Occasionally lowercase first letter (casual vibes, 30% chance)
   if (Math.random() > 0.7 && result.length > 0) {
     result = result.charAt(0).toLowerCase() + result.slice(1);
   }
 
-  // Remove trailing period on short casual tweets
   if (result.length < 180 && result.endsWith('.')) {
     result = result.slice(0, -1);
   }
@@ -965,7 +1019,6 @@ async function generateBatchContent(topic, style = 'casual', language = 'indones
   const tones = ['casual', 'opinion', 'storytelling', 'humor', 'informative', 'hype'];
   const usedTones = [];
 
-  // Pick `count` different tones — always include user's chosen style first
   usedTones.push(style);
   const others = tones.filter(t => t !== style);
   while (usedTones.length < count) {
@@ -973,14 +1026,12 @@ async function generateBatchContent(topic, style = 'casual', language = 'indones
     if (!usedTones.includes(pick)) usedTones.push(pick);
   }
 
-  // Run all generates in parallel
   const generatePromises = usedTones.map(tone =>
     generateStandaloneTweet(topic, tone, language)
       .then(text => ({ tone, text: simulateHumanTyping(text, language), ok: true }))
       .catch(e => ({ tone, text: '', ok: false, error: e.message }))
   );
 
-  // Image search runs in parallel too
   const imagePromise = searchRelevantImage(topic, language);
 
   const [results, image] = await Promise.all([
@@ -997,14 +1048,10 @@ async function generateBatchContent(topic, style = 'casual', language = 'indones
   };
 }
 
-// ===== MESSAGE HANDLER =====
+// ===== MESSAGE HANDLER (WITH PERSONA ACTIONS) =====
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'generateTwitterResponse') {
-    generateResponse(
-      request.tweetContext,
-      request.style,
-      request.includeEmojis
-    )
+    generateResponse(request.tweetContext, request.style, request.includeEmojis)
       .then(reply => {
         console.log('✅ Reply generated:', reply);
         sendResponse(reply);
@@ -1015,14 +1062,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   }
-  
   if (request.action === 'generateMultipleResponses') {
-    generateMultipleResponses(
-      request.tweetContext,
-      request.style,
-      request.includeEmojis,
-      request.numResponses || 3
-    )
+    generateMultipleResponses(request.tweetContext, request.style, request.includeEmojis, request.numResponses || 3)
       .then(result => {
         console.log('✅ Multiple responses generated:', result.responses.length);
         sendResponse(result);
@@ -1033,7 +1074,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   }
-  
   if (request.action === 'generateStandaloneTweet') {
     generateStandaloneTweet(request.topic, request.style, request.language)
       .then(tweet => {
@@ -1046,7 +1086,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   }
-  
   if (request.action === 'generateThread') {
     generateThread(request.topic, request.style, request.language)
       .then(threads => {
@@ -1059,16 +1098,58 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     return true;
   }
-  
   if (request.action === 'generateBatchContent') {
-    generateBatchContent(
-      request.topic,
-      request.style,
-      request.language,
-      request.count || 3
-    )
+    generateBatchContent(request.topic, request.style, request.language, request.count || 3)
       .then(result => sendResponse(result))
       .catch(error => sendResponse({ error: error.message }));
+    return true;
+  }
+
+  // ===== PERSONA HANDLERS =====
+  if (request.action === 'getPersonas') {
+    getAllPersonas()
+      .then(personas => {
+        chrome.storage.sync.get(['activePersonaId'], (result) => {
+          sendResponse({ personas, activePersonaId: result.activePersonaId || 'default' });
+        });
+      })
+      .catch(error => sendResponse({ error: error.message }));
+    return true;
+  }
+
+  if (request.action === 'setActivePersona') {
+    chrome.storage.sync.set({ activePersonaId: request.personaId }, () => {
+      sendResponse({ success: true, personaId: request.personaId });
+    });
+    return true;
+  }
+
+  if (request.action === 'saveCustomPersona') {
+    chrome.storage.sync.get(['customPersonas'], (result) => {
+      const customs = result.customPersonas || [];
+      const existing = customs.findIndex(p => p.id === request.persona.id);
+      if (existing >= 0) {
+        customs[existing] = request.persona;
+      } else {
+        customs.push(request.persona);
+      }
+      chrome.storage.sync.set({ customPersonas: customs }, () => {
+        sendResponse({ success: true, personas: [...DEFAULT_PERSONAS, ...customs] });
+      });
+    return true;
+  }
+
+  if (request.action === 'deleteCustomPersona') {
+    chrome.storage.sync.get(['customPersonas', 'activePersonaId'], (result) => {
+      const customs = (result.customPersonas || []).filter(p => p.id !== request.personaId);
+      const updates = { customPersonas: customs };
+      if (result.activePersonaId === request.personaId) {
+        updates.activePersonaId = 'default';
+      }
+      chrome.storage.sync.set(updates, () => {
+        sendResponse({ success: true, personas: [...DEFAULT_PERSONAS, ...customs] });
+      });
+    });
     return true;
   }
 
@@ -1076,9 +1157,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ status: 'AI Assistant online', model: 'llama-3.3-70b-versatile' });
     return;
   }
-  
   sendResponse({ error: 'Unknown action' });
 });
 
-console.log('✅ JAGRES AI ASSISTANT v5.0 INITIALIZED');
-console.log('✨ Features: Multi-response | Sentiment analysis | Natural Japanese | Retweet/Quote detection | ULTRA-NATURAL Content Creator');
+console.log('✅ JAGRES AI ASSISTANT v2.0 INITIALIZED');
+console.log('✨ Features: Custom Persona | Multi-response | Sentiment analysis | Natural Japanese | Content Creator');
