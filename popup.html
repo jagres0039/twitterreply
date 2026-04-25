@@ -1,635 +1,570 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JAGRES AI ASSISTANT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
-    
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+
     body {
-      width: 400px;
-      min-height: 650px;
-      background: linear-gradient(135deg, #1a0a2e 0%, #2d0b47 25%, #4a0d66 50%, #6a1b9a 75%, #8e24aa 100%);
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
-      color: #f8f9fa;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 80%, rgba(147, 112, 219, 0.15) 0%, transparent 50%),
-                  linear-gradient(45deg, transparent 48%, rgba(255, 215, 0, 0.05) 49%, rgba(255, 215, 0, 0.05) 51%, transparent 52%);
-      background-size: 100% 100%, 100% 100%, 20px 20px;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    .container { padding: 24px; position: relative; z-index: 2; }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-      position: relative;
-    }
-    
-    .header::before {
-      content: '';
-      position: absolute;
-      top: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #ffd700, transparent);
-      animation: headerGlow 3s ease-in-out infinite;
-    }
-    
-    .header h3 {
+      width: 380px;
+      min-height: 500px;
+      background: linear-gradient(145deg, #0d0416 0%, #1a0a2e 30%, #0d0416 70%, #150820 100%);
+      color: #e0d0f0;
       font-family: 'Outfit', sans-serif;
-      font-weight: 800;
-      font-size: 24px;
-      background: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700);
-      background-size: 200% 200%;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 2px; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,165,0,0.05));
+      border-bottom: 1px solid rgba(255,215,0,0.15);
+      padding: 16px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 18px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fd700, #ffaa00, #fd700);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin: 0;
-      letter-spacing: 1px;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-      animation: gradientShift 4s ease-in-out infinite;
-    }
-    
-    .header .subtitle {
-      font-size: 11px;
-      color: #e1bee7;
-      margin-top: 6px;
-      opacity: 0.9;
       letter-spacing: 2px;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-family: 'JetBrains Mono', monospace;
     }
-    
-    .version {
-      font-size: 9px;
-      color: #ffb74d;
+    .header .subtitle {
+      font-size: 10px;
+      color: #ce93d8;
+      letter-spacing: 3px;
       margin-top: 4px;
-      opacity: 0.8;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: 1px;
-    }
-    
-    .section {
-      margin-bottom: 20px;
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      border-radius: 16px;
-      padding: 20px;
-      background: rgba(30, 10, 45, 0.7);
-      backdrop-filter: blur(20px);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.6), transparent);
-      animation: sectionScan 6s linear infinite;
-    }
-    
-    .section:hover {
-      border-color: rgba(255, 215, 0, 0.4);
-      background: rgba(35, 12, 52, 0.85);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(255, 215, 0, 0.15);
-    }
-    
-    .section-title {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      color: #ffd700;
-      margin-bottom: 16px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+    }
+    .header .version {
+      font-size: 9px;
+      color: rgba(255,215,0,0.4);
+      margin-top: 2px;
+    }
+
+    /* Status Bar */
+    .status-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px;
+      background: rgba(0,255,136,0.05);
+      border-bottom: 1px solid rgba(0,255,136,0.1);
     }
-    
-    .section-title::before {
-      content: '';
-      width: 10px;
-      height: 10px;
-      background: linear-gradient(135deg, #ffd700, #9c27b0);
+    .status-dot {
+      width: 6px; height: 6px;
+      background: #00ff88;
       border-radius: 50%;
-      animation: iconPulse 2s ease-in-out infinite;
+      animation: statusPulse 2s ease-in-out infinite;
     }
-    
-    input, select {
-      width: 100%;
-      padding: 14px 16px;
-      background: rgba(25, 8, 38, 0.9);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      border-radius: 12px;
-      color: #f8f9fa;
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
-      font-size: 13px;
-      margin: 10px 0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px #00ff88; }
+      50% { opacity: 0.5; box-shadow: 0 8px #00ff88; }
     }
-    
-    input:focus, select:focus {
-      outline: none;
-      border-color: #ffd700;
-      background: rgba(30, 10, 45, 0.95);
-      box-shadow: inset 0 1px 4px rgba(0,0,0,0.3), 0 0 0 3px rgba(255,215,0,0.2), 0 4px 16px rgba(255,215,0,0.2);
-      transform: translateY(-1px);
-    }
-    
-    input::placeholder { color: #ce93d8; }
-    
-    button {
-      width: 100%;
-      padding: 14px 20px;
-      background: linear-gradient(135deg, #9c27b0 0%, #ffd700 50%, #9c27b0 100%);
-      border: none;
-      border-radius: 12px;
-      color: #0a0a0f;
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Outfit', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
-    }
-    
-    button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      transition: left 0.6s ease;
-    }
-    
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(156,39,176,0.5), 0 4px 16px rgba(255,215,0,0.3);
-      background: linear-gradient(135deg, #ffd700 0%, #9c27b0 50%, #ffd700 100%);
-      background-size: 200% 200%;
-    }
-    
-    button:hover::before { left: 100%; }
-    
-    .status { padding: 12px 16px; border-radius: 10px; margin: 12px 0; font-size: 12px; font-weight: 500; text-align: center; animation: statusFadeIn 0.4s ease; border: 1px solid transparent; }
-    .success { background: linear-gradient(135deg, rgba(100,255,218,0.1), rgba(255,215,0,0.15)); border-color: rgba(255,215,0,0.4); color: #ffd700; }
-    .error { background: linear-gradient(135deg, rgba(255,64,64,0.1), rgba(156,39,176,0.15)); border-color: rgba(255,64,64,0.4); color: #ff5252; }
-    .warning { background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(255,152,0,0.15)); border-color: rgba(255,193,7,0.4); color: #ffc107; }
-    
-    .style-preview {
-      font-size: 11px;
-      color: #ce93d8;
-      margin: 12px 0;
-      padding: 12px;
-      background: rgba(25, 8, 38, 0.8);
-      border-radius: 8px;
-      border-left: 3px solid #ffd700;
-      font-style: italic;
-      line-height: 1.5;
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
-      min-height: 60px;
-      white-space: pre-wrap;
-    }
-    
-    .toggle-section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 16px 0;
-      padding: 12px;
-      background: rgba(25, 8, 38, 0.6);
-      border-radius: 10px;
-      border: 1px solid rgba(255, 215, 0, 0.15);
-      transition: all 0.3s ease;
-    }
-    
-    .toggle-section:hover {
-      background: rgba(30, 10, 45, 0.7);
-      border-color: rgba(255, 215, 0, 0.3);
-    }
-    
-    .toggle-section span {
-      font-size: 13px;
-      color: #f8f9fa;
-      font-weight: 500;
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
-    }
-    
-    .toggle {
-      position: relative;
-      width: 48px;
-      height: 24px;
-      background: rgba(136, 146, 176, 0.2);
-      border-radius: 12px;
-      border: 1px solid rgba(136, 146, 176, 0.3);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .toggle.active {
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(156, 39, 176, 0.3));
-      border-color: #ffd700;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-    }
-    
-    .toggle-slider {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      background: linear-gradient(135deg, #ffd700, #9c27b0);
-      border-radius: 50%;
-      top: 2px;
-      left: 2px;
-      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    
-    .toggle.active .toggle-slider {
-      transform: translateX(24px);
-      background: linear-gradient(135deg, #9c27b0, #ffd700);
-      box-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
-    }
-    
-    .mode-indicator {
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(156, 39, 176, 0.15));
-      border: 1px solid rgba(255, 215, 0, 0.4);
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin: 12px 0;
-      font-size: 12px;
-      color: #ffd700;
-      text-align: center;
-      font-weight: 500;
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
-    }
-    
-    .api-key-info {
+    .status-text {
       font-size: 10px;
-      color: #ce93d8;
-      margin-top: 8px;
-      text-align: center;
-      line-height: 1.4;
-      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
-    }
-    
-    .api-key-info strong { color: #ffd700; }
-    
-    #contentActions {
-      display: none;
-      margin-top: 10px;
-      gap: 10px;
-      flex-direction: column;
-    }
-    
-    .copy-btn-main {
-      width: 100%;
-      padding: 10px;
-      font-size: 12px;
-      background: linear-gradient(135deg, #40e0ff, #ff40e0);
-      border: none;
-      border-radius: 8px;
-      color: #000;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Orbitron', sans-serif;
-      letter-spacing: 0.5px;
-      transition: all 0.2s;
-    }
-    .copy-btn-main:hover {
-      background: linear-gradient(135deg, #ff40e0, #40e0ff);
-      transform: translateY(-1px);
-    }
-    
-    .tweet-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(64,224,255,0.2);
-      border-radius: 10px;
-      padding: 14px;
-      font-family: 'Rajdhani', 'Inter', sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #e0e6ed;
-      word-break: break-word;
-    }
-    
-    .tweet-text {
-      margin-bottom: 10px;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #e0e6ed;
-    }
-    
-    .copy-single-btn {
-      background: rgba(64,224,255,0.12);
-      border: 1px solid rgba(64,224,255,0.35);
-      border-radius: 6px;
-      color: #40e0ff;
-      font-size: 11px;
-      padding: 4px 12px;
-      cursor: pointer;
-      font-family: 'Orbitron', sans-serif;
+      color: #00ff88;
+      letter-spacing: 1px;
       font-weight: 600;
-      transition: all 0.2s;
     }
-    .copy-single-btn:hover {
-      background: rgba(64,224,255,0.25);
-      transform: translateY(-1px);
-    }
-    
 
-    /* ===== BATCH GENERATOR ===== */
-    #batchSection { margin-top: 4px; }
-
-    .batch-controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 10px;
+    /* Sections */
+    .section {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255,215,0,0.08);
     }
-    .batch-controls select {
-      flex: 1;
-    }
-    .batch-count-label {
+    .section-title {
       font-size: 11px;
-      color: #8892b0;
-      font-family: 'Orbitron', sans-serif;
-      white-space: nowrap;
-    }
-
-    #generateBatch {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #f7971e, #ffd200);
-      color: #000;
-      font-family: 'Orbitron', sans-serif;
       font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.2s;
+      color: #ffd700;
+      letter-spacing: 2px;
       margin-bottom: 12px;
+      text-transform: uppercase;
     }
-    #generateBatch:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,0.35); }
-    #generateBatch:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    .batch-image-preview {
+    /* Inputs */
+    input[type="text"], input[type="password"], textarea, select {
       width: 100%;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 10px;
-      border: 1px solid rgba(64,224,255,0.25);
-      margin-bottom: 12px;
-      display: none;
-      cursor: pointer;
-    }
-    .batch-image-caption {
-      font-size: 10px;
-      color: #8892b0;
-      text-align: center;
-      margin-top: -8px;
-      margin-bottom: 12px;
-      font-family: 'Orbitron', sans-serif;
-      display: none;
-    }
-
-    .batch-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(64,224,255,0.18);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 10px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .batch-card:hover {
-      border-color: rgba(64,224,255,0.45);
-      box-shadow: 0 4px 16px rgba(64,224,255,0.1);
-    }
-    .batch-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 10px 12px;
+      background: rgba(25, 8, 38, 0.8);
+      border: 1px solid rgba(255,215,0.15);
+      border-radius: 8px;
+      color: #e0d0f0;
+      font-size: 13px;
+      font-family: 'Outfit', sans-serif;
+      outline: none;
+      transition: all 0.3s;
       margin-bottom: 8px;
     }
-    .batch-tone-badge {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 9px;
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(255,215,0,0.5);
+      box-shadow: 0 0 12px rgba(255,215,0.1);
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    select { cursor: pointer; }
+    select option { background: #1a0a2e; color: #e0d0f0; }
+
+    /* Labels */
+    .input-label {
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.8px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: rgba(64,224,255,0.12);
-      border: 1px solid rgba(64,224,255,0.3);
-      color: #40e0ff;
+      color: #ce93d8;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      display: block;
       text-transform: uppercase;
     }
-    .batch-char-count {
-      font-size: 10px;
-      color: #8892b0;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .batch-card-text {
-      font-family: 'Rajdhani', 'Inter', sans-serif;
-      font-size: 14px;
-      line-height: 1.65;
-      color: #e0e6ed;
-      margin-bottom: 10px;
-      word-break: break-word;
-    }
-    .batch-card-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .batch-copy-btn {
-      flex: 1;
-      padding: 6px 0;
-      border-radius: 7px;
-      border: 1px solid rgba(64,224,255,0.35);
-      background: rgba(64,224,255,0.08);
-      color: #40e0ff;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .batch-copy-btn:hover { background: rgba(64,224,255,0.2); }
-    .batch-select-btn {
-      flex: 1;
-      padding: 6px 0;
-      border-radius: 7px;
-      border: none;
-      background: linear-gradient(135deg, #40e0ff, #ff40e0);
-      color: #000;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 10px;
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid rgba(255,215,0,0.3);
+      border-radius: 10px;
+      font-size: 12px;
       font-weight: 700;
+      font-family: 'Outfit', sans-serif;
       cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
-    .batch-select-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-    .batch-selected {
-      border-color: #ffd200 !important;
-      box-shadow: 0 0 12px rgba(255,210,0,0.2) !important;
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0.1));
+      color: #fd700;
     }
-    .batch-selected .batch-select-btn {
-      background: linear-gradient(135deg, #ffd200, #f7971e);
+    .btn-primary:hover {
+      background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,165,0.2));
+      border-color: #ffd700;
+      box-shadow: 0 0 15px rgba(255,215,0,0.15);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: rgba(206,147,216,0.1);
+      border-color: rgba(206,147,216,0.3);
+      color: #ce93d8;
+    }
+    .btn-secondary:hover {
+      background: rgba(206,147,216,0.2);
+      border-color: #ce93d8;
+    }
+    .btn-save {
+      background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,200,100,0.1));
+      border-color: rgba(0,255,136,0.3);
+      color: #00ff88;
+    }
+    .btn-save:hover {
+      background: linear-gradient(135deg, rgba(0,255,136,0.25), rgba(0,200,100,0.2));
+      border-color: #00ff88;
+      box-shadow: 0 0 15px rgba(0,255,136,0.15);
     }
 
-    @keyframes headerGlow { 0%,100% { opacity:0.6; transform:scaleX(1); } 50% { opacity:1; transform:scaleX(1.2); } }
-    @keyframes gradientShift { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
-    @keyframes sectionScan { 0% { left:-100%; } 100% { left:100%; } }
-    @keyframes iconPulse { 0%,100% { transform:scale(1); opacity:0.7; } 50% { transform:scale(1.2); opacity:1; } }
-    @keyframes statusFadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-    
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(25,8,38,0.5); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #ffd700, #9c27b0); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #9c27b0, #ffd700); }
+    /* Result Box */
+    .result-box {
+      background: rgba(25, 8, 38, 0.6);
+      border: 1px solid rgba(255,215,0.12);
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+      display: none;
+    }
+    .result-box.show { display: block; }
+    .result-text {
+      font-size: 13px;
+      color: #e8e0f0;
+      line-height: 1.5;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .result-actions .btn { flex: 1; padding: 8px; font-size: 11px; }
+
+    /* Thread Results */
+    .thread-container { display: flex; flex-direction: column; gap: 8px; }
+    .thread-tweet {
+      background: rgba(25, 8, 38, 0.5);
+      border: 1px solid rgba(255,215,0.1);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .thread-tweet-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #ffd700;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .thread-tweet-text {
+      font-size: 12px;
+      color: #e0d0f0;
+      line-height: 1.4;
+    }
+    .thread-tweet-copy {
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: rgba(255,215,0,0.1);
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 6px;
+      color: #ffd700;
+      font-size: 10px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Batch Results */
+    .batch-container { display: flex; flex-direction: column; gap: 8px; }
+    .batch-tweet {
+      background: rgba(25, 8, 38, 0.5);
+      border: 1px solid rgba(206,147,216,0.15);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .batch-tweet-tone {
+      font-size: 9px;
+      font-weight: 700;
+      color: #ce93d8;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .batch-tweet-text {
+      font-size: 12px;
+      color: #e0d0f0;
+      line-height: 1.4;
+    }
+    .batch-tweet-copy {
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: rgba(206,147,216,0.1);
+      border: 1px solid rgba(206,147,216,0.2);
+      border-radius: 6px;
+      color: #ce93d8;
+      font-size: 10px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Active Persona Display */
+    .active-persona-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(255,215,0,0.05);
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .active-persona-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #ce93d8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .active-persona-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffd700;
+    }
+
+    /* Persona Grid */
+    #personaGrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      padding: 2px;
+    }
+    .persona-card {
+      background: rgba(25, 8, 38, 0.8);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 10px;
+      padding: 10px 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      position: relative;
+    }
+    .persona-card:hover {
+      border-color: rgba(255, 215, 0, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
+    }
+    .persona-card.active {
+      border-color: #ffd700;
+      background: rgba(255, 215, 0, 0.1);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    }
+    .persona-card .persona-emoji {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .persona-card .persona-card-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: #ffd700;
+      letter-spacing: 0.5px;
+    }
+    .persona-card .persona-card-desc {
+      font-size: 8px;
+      color: #ce93d8;
+      margin-top: 2px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .persona-delete-btn {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: rgba(255, 64, 0.2);
+      border: 1px solid rgba(255, 64, 0.4);
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      font-size: 9px;
+      color: #ff4040;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      line-height: 1;
+    }
+    .persona-card:hover .persona-delete-btn {
+      opacity: 1;
+    }
+    .persona-delete-btn:hover {
+      background: rgba(255, 64, 0.4);
+    }
+
+    /* Create Persona Form */
+    .create-persona-section {
+      border-top: 1px solid rgba(255,215,0,0.1);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+    .create-persona-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #ce93d8;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    /* Status Message */
+    #statusMessage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      z-index: 9999;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+      font-family: 'Outfit', sans-serif;
+    }
+    #statusMessage.show { transform: translateY(0); }
+    #statusMessage.success {
+      background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,200,100,0.1));
+      border-bottom: 1px solid rgba(0,255,136,0.3);
+      color: #00ff88;
+    }
+    #statusMessage.error {
+      background: linear-gradient(135deg, rgba(255,64,0.15), rgba(200,0,0.1));
+      border-bottom: 1px solid rgba(255,64,64,0.3);
+      color: #ff6464;
+    }
+    #statusMessage.warning {
+      background: linear-gradient(135deg, rgba(255,165,0,0.15), rgba(200,130,0,0.1));
+      border-bottom: 1px solid rgba(255,165,0.3);
+      color: #ffaa00;
+    }
+
+    /* Loading Spinner */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 16px;
+    }
+    .loading.show { display: block; }
+    .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid rgba(255,215,0,0.2);
+      border-top-color: #ffd700;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 11px;
+      color: #ce93d8;
+      letter-spacing: 1px;
+    }
+
+    /* Shake Animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    .shake { animation: shake 0.3s ease; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h3>JAGRES AI ASSISTANT</h3>
-      <div class="subtitle">Twitter Edition v1</div>
-      <div class="version">v1.0 • Jagres Edition</div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Groq API Configuration</div>
-      <input type="password" id="apiKey" placeholder="Enter your Groq API key (gsk_...)">
-      <button id="saveKey">Initialize Jagres Connection</button>
-      <div class="api-key-info">
-        Obtain your API key from <strong>console.groq.com</strong>
-      </div>
-      <div id="keyStatus"></div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Response Protocol</div>
-      <select id="responseStyle">
-        <option value="bullish">Optimistic Enthusiasm</option>
-        <option value="analytical">Technical Analysis</option>
-        <option value="community">Community Focus</option>
-        <option value="fomo">Urgency Creation</option>
-        <option value="cautious">Balanced Perspective</option>
-        <option value="meme">Cultural Humor</option>
-      </select>
-      <div id="stylePreview" class="style-preview"></div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">✨ CONTENT CREATOR</div>
-      <input type="text" id="contentTopic" placeholder="Topik... (e.g., resign kerja, crypto, anime, tips karir)">
-      <select id="contentLang">
-        <option value="indonesian">🇮🇩 Indonesia</option>
-        <option value="english">🇺🇸 English</option>
-        <option value="japanese">🇯🇵 Japanese</option>
-      </select>
-      <select id="contentTone">
-        <option value="casual">😎 Santai / Casual</option>
-        <option value="storytelling">📖 Storytelling</option>
-        <option value="opinion">🔥 Opini Tajam / Hot Take</option>
-        <option value="humor">😂 Humor & Relatable</option>
-        <option value="informative">💡 Informatif / Insight</option>
-        <option value="hype">⚡ Hype & Energik</option>
-      </select>
-      <select id="contentType">
-        <option value="single">Single Tweet</option>
-        <option value="thread">Thread (3 tweets)</option>
-      </select>
-      <button id="generateContent">⚡ GENERATE CONTENT</button>
-      <div id="contentPreview" class="style-preview" style="display: none;"></div>
-      <div id="contentActions">
-        <button id="copyContent">📋 COPY ALL</button>
-      </div>
-    </div>
-    
-    <div class="section" id="batchSection">
-      <div class="section-title">🚀 BATCH GENERATOR</div>
-      <input type="text" id="batchTopic" placeholder="Topik batch... (e.g., BTC rally, hustle culture)">
-      <div class="batch-controls">
-        <select id="batchLang">
-          <option value="indonesian">🇮🇩 Indonesia</option>
-          <option value="english">🇺🇸 English</option>
-          <option value="japanese">🇯🇵 Japanese</option>
-        </select>
-        <span class="batch-count-label">3 variasi</span>
-      </div>
-      <button id="generateBatch">🚀 GENERATE BATCH</button>
-      <img id="batchImage" class="batch-image-preview" alt="Topic image" title="Klik untuk buka gambar full">
-      <div id="batchImageCaption" class="batch-image-caption">📷 Gambar relevan — klik untuk buka</div>
-      <div id="batchResults"></div>
+
+  <!-- Status Message -->
+  <div id="statusMessage"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>⚡ JAGRES AI</h1>
+    <div class="subtitle">Twitter AI Assistant</div>
+    <div class="version">v2.0 — Custom Persona Edition</div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span class="status-text">NEURAL NETWORK ACTIVE</span>
+  </div>
+
+  <!-- Persona Manager Section -->
+  <div class="section">
+    <div class="section-title">🎭 PERSONA MANAGER</div>
+
+    <div class="active-persona-display">
+      <span class="active-persona-label">ACTIVE PERSONA</span>
+      <span class="active-persona-name" id="activePersonaName">🤖 Default</span>
     </div>
 
-    <div class="section">
-      <div class="section-title">Neural Network Settings</div>
-      <div class="toggle-section">
-        <span>Universal Protocol</span>
-        <div class="toggle active" id="universalMode">
-          <div class="toggle-slider"></div>
-        </div>
-      </div>
-      <div class="mode-indicator" id="modeIndicator">
-        Jagres network active for all Twitter accounts
-      </div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">Advanced Configuration</div>
-      <div class="toggle-section">
-        <span>Crypto Detection</span>
-        <div class="toggle active" id="autoDetect">
-          <div class="toggle-slider"></div>
-        </div>
-      </div>
-      <div class="toggle-section">
-        <span>Interface Display</span>
-        <div class="toggle active" id="showButton">
-          <div class="toggle-slider"></div>
-        </div>
-      </div>
-      <div class="toggle-section">
-        <span>Emoji Enhancement</span>
-        <div class="toggle active" id="includeEmojis">
-          <div class="toggle-slider"></div>
-        </div>
-      </div>
+    <div id="personaGrid"></div>
+
+    <div class="create-persona-section">
+      <div class="create-persona-title">CREATE CUSTOM PERSONA</div>
+      <input type="text" id="personaName" placeholder="Persona name (e.g. Savage Queen)" />
+      <input type="text" id="personaEmoji" placeholder="Emoji (e.g. 👑)" maxlength="4" />
+      <input type="text" id="personaDesc" placeholder="Short description (optional)" />
+      <textarea id="personaInstruction" placeholder="Character instruction — how should this persona talk? What's their personality? (required)" rows="3"></textarea>
+      <select id="personaTone">
+        <option value="casual">😎 Casual</option>
+        <option value="storytelling">📖 Storytelling</option>
+        <option value="opinion">🔥 Opini</option>
+        <option value="humor">😂 Humor</option>
+        <option value="informative">💡 Informatif</option>
+        <option value="hype">⚡ Hype</option>
+      </select>
+      <button class="btn btn-save" id="savePersona">🎭 SAVE PERSONA</button>
     </div>
   </div>
-  
+
+  <!-- API Settings -->
+  <div class="section">
+    <div class="section-title">⚙️ NEURAL NETWORK SETTINGS</div>
+    <label class="input-label">GROQ API KEY</label>
+    <input type="password" id="apiKey" placeholder="gsk_xxxxxxxxxxxxxxxx" />
+    <button class="btn btn-save" id="saveKey">💾 SAVE API KEY</button>
+  </div>
+
+  <!-- Content Creator -->
+  <div class="section">
+    <div class="section-title">✍️ CONTENT CREATOR</div>
+    <label class="input-label">TOPIC / IDEA</label>
+    <textarea id="tweetTopic" placeholder="What do you want to tweet about?" rows="2"></textarea>
+
+    <label class="input-label">TONE</label>
+    <select id="tweetStyle">
+      <option value="casual">😎 Casual</option>
+      <option value="storytelling">📖 Storytelling</option>
+      <option value="opinion">🔥 Opini Tajam</option>
+      <option value="humor">😂 Humor</option>
+      <option value="informative">💡 Informatif</option>
+      <option value="hype">⚡ Hype</option>
+    </select>
+
+    <label class="input-label">LANGUAGE</label>
+    <select id="tweetLanguage">
+      <option value="indonesian">🇮🇩 Indonesia</option>
+      <option value="english">🇺🇸 English</option>
+      <option value="japanese">🇯🇵 日本語</option>
+    </select>
+
+    <div style="display: flex; gap: 8px; margin-top: 4px;">
+      <button class="btn btn-primary" id="generateTweet" style="flex:1;">⚡ SINGLE TWEET</button>
+      <button class="btn btn-secondary" id="generateThread" style="flex:1;">🧵 THREAD (3)</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">GENERATING...</div>
+    </div>
+
+    <!-- Single Tweet Result -->
+    <div class="result-box" id="tweetResult">
+      <div class="result-text" id="tweetResultText"></div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="copyTweet">📋 COPY</button>
+        <button class="btn btn-secondary" id="regenTweet">🔄 REGEN</button>
+      </div>
+    </div>
+
+    <!-- Thread Result -->
+    <div class="result-box" id="threadResult">
+      <div class="thread-container" id="threadContainer"></div>
+    </div>
+  </div>
+
+  <!-- Batch Generator -->
+  <div class="section">
+    <div class="section-title">📦 BATCH GENERATOR</div>
+    <label class="input-label">TOPIC</label>
+    <input type="text" id="batchTopic" placeholder="Topic for batch generation" />
+    <button class="btn btn-primary" id="generateBatch">📦 GENERATE 3 VARIATIONS</button>
+
+    <div class="loading" id="batchLoading">
+      <div class="spinner"></div>
+      <div class="loading-text">GENERATING BATCH...</div>
+    </div>
+
+    <div class="result-box" id="batchResult">
+      <div class="batch-container" id="batchContainer"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding: 12px; text-align: center;">
+    <div style="font-size: 9px; color: rgba(255,215,0,0.3); letter-spacing: 1px;">
+      JAGRES AI ASSISTANT v2.0 — CUSTOM PERSONA EDITION
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
