@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      width: 400px;
+      min-height: 650px;
+      background: linear-gradient(135deg, #1a0a2e 0%, #2d0b47 25%, #4a0d66 50%, #6a1b9a 75%, #8e24aa 100%);
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
+      color: #f8f9fa;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(147, 112, 219, 0.15) 0%, transparent 50%),
+                  linear-gradient(45deg, transparent 48%, rgba(255, 215, 0, 0.05) 49%, rgba(255, 215, 0, 0.05) 51%, transparent 52%);
+      background-size: 100% 100%, 100% 100%, 20px 20px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .container { padding: 24px; position: relative; z-index: 2; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #ffd700, transparent);
+      animation: headerGlow 3s ease-in-out infinite;
+    }
+    
+    .header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 24px;
+      background: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      animation: gradientShift 4s ease-in-out infinite;
+    }
+    
+    .header .subtitle {
+      font-size: 11px;
+      color: #e1bee7;
+      margin-top: 6px;
+      opacity: 0.9;
+      letter-spacing: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .version {
+      font-size: 9px;
+      color: #ffb74d;
+      margin-top: 4px;
+      opacity: 0.8;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px;
+    }
+    
+    .section {
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      background: rgba(30, 10, 45, 0.7);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.6), transparent);
+      animation: sectionScan 6s linear infinite;
+    }
+    
+    .section:hover {
+      border-color: rgba(255, 215, 0, 0.4);
+      background: rgba(35, 12, 52, 0.85);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(255, 215, 0, 0.15);
+    }
+    
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffd700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: linear-gradient(135deg, #ffd700, #9c27b0);
+      border-radius: 50%;
+      animation: iconPulse 2s ease-in-out infinite;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(25, 8, 38, 0.9);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      color: #f8f9fa;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
+      font-size: 13px;
+      margin: 10px 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #ffd700;
+      background: rgba(30, 10, 45, 0.95);
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.3), 0 0 0 3px rgba(255,215,0,0.2), 0 4px 16px rgba(255,215,0,0.2);
+      transform: translateY(-1px);
+    }
+    
+    input::placeholder { color: #ce93d8; }
+    
+    button {
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #9c27b0 0%, #ffd700 50%, #9c27b0 100%);
+      border: none;
+      border-radius: 12px;
+      color: #0a0a0f;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(156,39,176,0.5), 0 4px 16px rgba(255,215,0,0.3);
+      background: linear-gradient(135deg, #ffd700 0%, #9c27b0 50%, #ffd700 100%);
+      background-size: 200% 200%;
+    }
+    
+    button:hover::before { left: 100%; }
+    
+    .status { padding: 12px 16px; border-radius: 10px; margin: 12px 0; font-size: 12px; font-weight: 500; text-align: center; animation: statusFadeIn 0.4s ease; border: 1px solid transparent; }
+    .success { background: linear-gradient(135deg, rgba(100,255,218,0.1), rgba(255,215,0,0.15)); border-color: rgba(255,215,0,0.4); color: #ffd700; }
+    .error { background: linear-gradient(135deg, rgba(255,64,64,0.1), rgba(156,39,176,0.15)); border-color: rgba(255,64,64,0.4); color: #ff5252; }
+    .warning { background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(255,152,0,0.15)); border-color: rgba(255,193,7,0.4); color: #ffc107; }
+    
+    .style-preview {
+      font-size: 11px;
+      color: #ce93d8;
+      margin: 12px 0;
+      padding: 12px;
+      background: rgba(25, 8, 38, 0.8);
+      border-radius: 8px;
+      border-left: 3px solid #ffd700;
+      font-style: italic;
+      line-height: 1.5;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
+      min-height: 60px;
+      white-space: pre-wrap;
+    }
+    
+    .toggle-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 0;
+      padding: 12px;
+      background: rgba(25, 8, 38, 0.6);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+    
+    .toggle-section:hover {
+      background: rgba(30, 10, 45, 0.7);
+      border-color: rgba(255, 215, 0, 0.3);
+    }
+    
+    .toggle-section span {
+      font-size: 13px;
+      color: #f8f9fa;
+      font-weight: 500;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
+    }
+    
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      background: rgba(136, 146, 176, 0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(136, 146, 176, 0.3);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .toggle.active {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(156, 39, 176, 0.3));
+      border-color: #ffd700;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(135deg, #ffd700, #9c27b0);
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    
+    .toggle.active .toggle-slider {
+      transform: translateX(24px);
+      background: linear-gradient(135deg, #9c27b0, #ffd700);
+      box-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
+    }
+    
+    .mode-indicator {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(156, 39, 176, 0.15));
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin: 12px 0;
+      font-size: 12px;
+      color: #ffd700;
+      text-align: center;
+      font-weight: 500;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
+    }
+    
+    .api-key-info {
+      font-size: 10px;
+      color: #ce93d8;
+      margin-top: 8px;
+      text-align: center;
+      line-height: 1.4;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Yu Gothic', 'Inter', sans-serif;
+    }
+    
+    .api-key-info strong { color: #ffd700; }
+    
+    #contentActions {
+      display: none;
+      margin-top: 10px;
+      gap: 10px;
+      flex-direction: column;
+    }
+    
+    .copy-btn-main {
+      width: 100%;
+      padding: 10px;
+      font-size: 12px;
+      background: linear-gradient(135deg, #40e0ff, #ff40e0);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+    .copy-btn-main:hover {
+      background: linear-gradient(135deg, #ff40e0, #40e0ff);
+      transform: translateY(-1px);
+    }
+    
+    .tweet-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(64,224,255,0.2);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Rajdhani', 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e0e6ed;
+      word-break: break-word;
+    }
+    
+    .tweet-text {
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e0e6ed;
+    }
+    
+    .copy-single-btn {
+      background: rgba(64,224,255,0.12);
+      border: 1px solid rgba(64,224,255,0.35);
+      border-radius: 6px;
+      color: #40e0ff;
+      font-size: 11px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .copy-single-btn:hover {
+      background: rgba(64,224,255,0.25);
+      transform: translateY(-1px);
+    }
+    
+
+    /* ===== BATCH GENERATOR ===== */
+    #batchSection { margin-top: 4px; }
+
+    .batch-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .batch-controls select {
+      flex: 1;
+    }
+    .batch-count-label {
+      font-size: 11px;
+      color: #8892b0;
+      font-family: 'Orbitron', sans-serif;
+      white-space: nowrap;
+    }
+
+    #generateBatch {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+      color: #000;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    #generateBatch:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,210,0,0.35); }
+    #generateBatch:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .batch-image-preview {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(64,224,255,0.25);
+      margin-bottom: 12px;
+      display: none;
+      cursor: pointer;
+    }
+    .batch-image-caption {
+      font-size: 10px;
+      color: #8892b0;
+      text-align: center;
+      margin-top: -8px;
+      margin-bottom: 12px;
+      font-family: 'Orbitron', sans-serif;
+      display: none;
+    }
+
+    .batch-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(64,224,255,0.18);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .batch-card:hover {
+      border-color: rgba(64,224,255,0.45);
+      box-shadow: 0 4px 16px rgba(64,224,255,0.1);
+    }
+    .batch-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .batch-tone-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(64,224,255,0.12);
+      border: 1px solid rgba(64,224,255,0.3);
+      color: #40e0ff;
+      text-transform: uppercase;
+    }
+    .batch-char-count {
+      font-size: 10px;
+      color: #8892b0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .batch-card-text {
+      font-family: 'Rajdhani', 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #e0e6ed;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+    .batch-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .batch-copy-btn {
+      flex: 1;
+      padding: 6px 0;
+      border-radius: 7px;
+      border: 1px solid rgba(64,224,255,0.35);
+      background: rgba(64,224,255,0.08);
+      color: #40e0ff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .batch-copy-btn:hover { background: rgba(64,224,255,0.2); }
+    .batch-select-btn {
+      flex: 1;
+      padding: 6px 0;
+      border-radius: 7px;
+      border: none;
+      background: linear-gradient(135deg, #40e0ff, #ff40e0);
+      color: #000;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .batch-select-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .batch-selected {
+      border-color: #ffd200 !important;
+      box-shadow: 0 0 12px rgba(255,210,0,0.2) !important;
+    }
+    .batch-selected .batch-select-btn {
+      background: linear-gradient(135deg, #ffd200, #f7971e);
+    }
+
+    /* ===== CUSTOM PERSONA ===== */
+    .persona-textarea {
+      width: 100%;
+      min-height: 90px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(64,224,255,0.25);
+      border-radius: 10px;
+      color: #e0e6ed;
+      font-family: 'Rajdhani', 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 10px 12px;
+      resize: vertical;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .persona-textarea:focus {
+      outline: none;
+      border-color: rgba(64,224,255,0.6);
+    }
+    .persona-textarea::placeholder { color: #4a5568; }
+    .persona-save-btn {
+      width: 100%;
+      padding: 9px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #40e0ff, #7b2ff7);
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .persona-save-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .persona-hint {
+      font-size: 10px;
+      color: #8892b0;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .persona-active-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-family: 'Orbitron', sans-serif;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(64,224,255,0.15);
+      border: 1px solid rgba(64,224,255,0.35);
+      color: #40e0ff;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ===== REPLY TONE SELECTOR ===== */
+    .tone-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .tone-btn {
+      padding: 7px 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(64,224,255,0.2);
+      background: rgba(255,255,255,0.03);
+      color: #8892b0;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.4;
+      transition: all 0.18s;
+      letter-spacing: 0.3px;
+    }
+    .tone-btn:hover { border-color: rgba(64,224,255,0.5); color: #e0e6ed; background: rgba(64,224,255,0.08); }
+    .tone-btn.active {
+      border-color: #40e0ff;
+      background: rgba(64,224,255,0.18);
+      color: #40e0ff;
+      box-shadow: 0 0 8px rgba(64,224,255,0.2);
+    }
+    .tone-desc {
+      font-size: 10px;
+      color: #8892b0;
+      text-align: center;
+      min-height: 14px;
+      transition: all 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* ===== BLACKLIST ===== */
+    .blacklist-input-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .blacklist-input-row input {
+      flex: 1;
+      margin: 0;
+    }
+    .blacklist-add-btn {
+      padding: 0 14px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #40e0ff, #7b2ff7);
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.18s;
+    }
+    .blacklist-add-btn:hover { opacity: 0.85; }
+    .blacklist-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-height: 16px;
+    }
+    .blacklist-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,100,100,0.12);
+      border: 1px solid rgba(255,100,100,0.3);
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #ff8080;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .blacklist-tag button {
+      background: none;
+      border: none;
+      color: #ff8080;
+      cursor: pointer;
+      padding: 0;
+      font-size: 12px;
+      line-height: 1;
+      opacity: 0.7;
+    }
+    .blacklist-tag button:hover { opacity: 1; }
+    .blacklist-hint { font-size: 10px; color: #8892b0; margin-bottom: 8px; font-family: 'Rajdhani', sans-serif; }
+
+    /* ===== SAVED REPLIES ===== */
+    .saved-empty { font-size: 11px; color: #4a5568; text-align: center; padding: 16px 0; font-family: 'Rajdhani', sans-serif; }
+    .saved-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(64,224,255,0.15);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      transition: border-color 0.18s;
+    }
+    .saved-item:hover { border-color: rgba(64,224,255,0.35); }
+    .saved-item-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .saved-item-topic {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      color: #40e0ff;
+      letter-spacing: 0.5px;
+      max-width: 65%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .saved-item-date { font-size: 9px; color: #4a5568; font-family: 'Rajdhani', sans-serif; }
+    .saved-item-text {
+      font-family: 'Rajdhani', 'Inter', sans-serif;
+      font-size: 13px;
+      color: #c8d0dc;
+      line-height: 1.5;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+    .saved-item-actions { display: flex; gap: 6px; }
+    .saved-copy-btn, .saved-del-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+    }
+    .saved-copy-btn { background: rgba(64,224,255,0.12); border: 1px solid rgba(64,224,255,0.3); color: #40e0ff; }
+    .saved-copy-btn:hover { background: rgba(64,224,255,0.25); }
+    .saved-del-btn { background: rgba(255,100,100,0.1); border: 1px solid rgba(255,100,100,0.25); color: #ff8080; }
+    .saved-del-btn:hover { background: rgba(255,100,100,0.2); }
+
+    /* ===== REPLY HISTORY ===== */
+    .history-item {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(123,47,247,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 7px;
+      transition: border-color 0.18s;
+    }
+    .history-item:hover { border-color: rgba(123,47,247,0.45); }
+    .history-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .history-tweet-ctx {
+      font-size: 9px;
+      color: #6a7a8e;
+      font-family: 'Rajdhani', sans-serif;
+      max-width: 70%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .history-time {
+      font-size: 9px;
+      color: #4a5568;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .history-text {
+      font-size: 13px;
+      color: #c8d0dc;
+      line-height: 1.5;
+      margin-bottom: 7px;
+      font-family: 'Rajdhani', sans-serif;
+      word-break: break-word;
+    }
+    .history-actions { display: flex; gap: 6px; }
+    .history-copy-btn, .history-save-btn, .history-del-btn {
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .history-copy-btn { background: rgba(64,224,255,0.1); border: 1px solid rgba(64,224,255,0.25); color: #40e0ff; }
+    .history-save-btn { background: rgba(255,210,0,0.1); border: 1px solid rgba(255,210,0,0.25); color: #ffd200; }
+    .history-del-btn  { background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.2); color: #ff8080; }
+    .history-copy-btn:hover { background: rgba(64,224,255,0.2); }
+    .history-save-btn:hover { background: rgba(255,210,0,0.2); }
+    .history-del-btn:hover  { background: rgba(255,100,100,0.18); }
+    .history-empty { font-size: 11px; color: #4a5568; text-align: center; padding: 14px 0; font-family: 'Rajdhani', sans-serif; }
+    .history-toolbar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .history-toolbar button {
+      flex: 1;
+      padding: 6px 0;
+      border-radius: 7px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .history-clear-btn { background: rgba(255,100,100,0.12); border: 1px solid rgba(255,100,100,0.25) !important; color: #ff8080; }
+    .history-export-btn { background: rgba(64,224,255,0.1); border: 1px solid rgba(64,224,255,0.25) !important; color: #40e0ff; }
+    .history-clear-btn:hover { background: rgba(255,100,100,0.25); }
+    .history-export-btn:hover { background: rgba(64,224,255,0.22); }
+
+    @keyframes headerGlow { 0%,100% { opacity:0.6; transform:scaleX(1); } 50% { opacity:1; transform:scaleX(1.2); } }
+    @keyframes gradientShift { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+    @keyframes sectionScan { 0% { left:-100%; } 100% { left:100%; } }
+    @keyframes iconPulse { 0%,100% { transform:scale(1); opacity:0.7; } 50% { transform:scale(1.2); opacity:1; } }
+    @keyframes statusFadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(25,8,38,0.5); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #ffd700, #9c27b0); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #9c27b0, #ffd700); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h3>JAGRES AI ASSISTANT</h3>
+      <div class="subtitle">Twitter Edition v1</div>
+      <div class="version">v1.0 • Jagres Edition</div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Groq API Configuration</div>
+      <input type="password" id="apiKey" placeholder="Enter your Groq API key (gsk_...)">
+      <button id="saveKey">Initialize Jagres Connection</button>
+      <div class="api-key-info">
+        Obtain your API key from <strong>console.groq.com</strong>
+      </div>
+      <div id="keyStatus"></div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">🎯 REPLY TONE</div>
+      <div class="tone-grid">
+        <button class="tone-btn active" data-tone="auto">🤖<br>AUTO</button>
+        <button class="tone-btn" data-tone="serious">🧠<br>SERIUS</button>
+        <button class="tone-btn" data-tone="funny">😂<br>BERCANDA</button>
+        <button class="tone-btn" data-tone="question">🤔<br>NANYA BALIK</button>
+        <button class="tone-btn" data-tone="roast">🔥<br>ROAST HALUS</button>
+        <button class="tone-btn" data-tone="support">🤝<br>SUPPORTIF</button>
+      </div>
+      <div class="tone-desc" id="toneDesc">AI pilih tone yang paling sesuai konteks</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🚫 BLACKLIST KATA</div>
+      <p class="blacklist-hint">Kata-kata ini tidak akan pernah muncul di output AI</p>
+      <div class="blacklist-input-row">
+        <input type="text" id="blacklistInput" placeholder="Tambah kata...">
+        <button class="blacklist-add-btn" id="blacklistAdd">+ ADD</button>
+      </div>
+      <div class="blacklist-tags" id="blacklistTags"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🕒 REPLY HISTORY</div>
+      <div class="history-toolbar">
+        <button class="history-export-btn" id="exportHistory">⬇️ EXPORT</button>
+        <button class="history-clear-btn" id="clearHistory">🗑️ CLEAR ALL</button>
+      </div>
+      <div id="historyList"><div class="history-empty">Belum ada history</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💾 SAVED REPLIES</div>
+      <div class="history-toolbar" style="margin-bottom:8px;">
+        <button class="history-export-btn" id="exportSaved">⬇️ EXPORT</button>
+      </div>
+      <div id="savedRepliesList"><div class="saved-empty">Belum ada reply tersimpan</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🎭 CUSTOM PERSONA <span id="personaBadge" class="persona-active-badge" style="display:none">ACTIVE</span></div>
+      <p class="persona-hint">Definisikan karakter AI sesuai gaya akun lo. AI akan reply dengan style ini.</p>
+      <textarea
+        id="personaInput"
+        class="persona-textarea"
+        placeholder="Contoh:&#10;Nama akun: @TechJagres&#10;Gaya: sarkastis tapi informatif, sering pakai humor gelap&#10;Sering bahas: teknologi, startup, programming&#10;Kata khas: &quot;literally&quot;, &quot;bro&quot;, &quot;ngl&quot;&#10;Hindari: terlalu formal, bahasa inggris berlebihan"
+      ></textarea>
+      <button class="persona-save-btn" id="savePersona">💾 SIMPAN PERSONA</button>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">✨ CONTENT CREATOR</div>
+      <input type="text" id="contentTopic" placeholder="Topik... (e.g., resign kerja, crypto, anime, tips karir)">
+      <select id="contentLang">
+        <option value="indonesian">🇮🇩 Indonesia</option>
+        <option value="english">🇺🇸 English</option>
+        <option value="japanese">🇯🇵 Japanese</option>
+      </select>
+      <select id="contentTone">
+        <option value="casual">😎 Santai / Casual</option>
+        <option value="storytelling">📖 Storytelling</option>
+        <option value="opinion">🔥 Opini Tajam / Hot Take</option>
+        <option value="humor">😂 Humor & Relatable</option>
+        <option value="informative">💡 Informatif / Insight</option>
+        <option value="hype">⚡ Hype & Energik</option>
+      </select>
+      <select id="contentType">
+        <option value="single">Single Tweet</option>
+        <option value="thread">Thread (3 tweets)</option>
+      </select>
+      <button id="generateContent">⚡ GENERATE CONTENT</button>
+      <div id="contentPreview" class="style-preview" style="display: none;"></div>
+      <div id="contentActions">
+        <button id="copyContent">📋 COPY ALL</button>
+      </div>
+    </div>
+    
+    <div class="section" id="batchSection">
+      <div class="section-title">🚀 BATCH GENERATOR</div>
+      <input type="text" id="batchTopic" placeholder="Topik batch... (e.g., BTC rally, hustle culture)">
+      <div class="batch-controls">
+        <select id="batchLang">
+          <option value="indonesian">🇮🇩 Indonesia</option>
+          <option value="english">🇺🇸 English</option>
+          <option value="japanese">🇯🇵 Japanese</option>
+        </select>
+        <span class="batch-count-label">3 variasi</span>
+      </div>
+      <button id="generateBatch">🚀 GENERATE BATCH</button>
+      <img id="batchImage" class="batch-image-preview" alt="Topic image" title="Klik untuk buka gambar full">
+      <div id="batchImageCaption" class="batch-image-caption">📷 Gambar relevan — klik untuk buka</div>
+      <div id="batchResults"></div>
+    </div>
+
+
+    <div class="section">
+      <div class="section-title">Neural Network Settings</div>
+      <div class="toggle-section">
+        <span>Universal Protocol</span>
+        <div class="toggle active" id="universalMode">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+      <div class="mode-indicator" id="modeIndicator">
+        Jagres network active for all Twitter accounts
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Advanced Configuration</div>
+      <div class="toggle-section">
+        <span>Crypto Detection</span>
+        <div class="toggle active" id="autoDetect">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+      <div class="toggle-section">
+        <span>Interface Display</span>
+        <div class="toggle active" id="showButton">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+      <div class="toggle-section">
+        <span>Emoji Enhancement</span>
+        <div class="toggle active" id="includeEmojis">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
